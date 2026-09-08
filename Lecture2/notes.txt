@@ -1,0 +1,283 @@
+This line:
+
+Car myCar = new SportsCar("Ford", "Mustang");
+
+can be confusing because Car appears on the left side.
+
+Let's break it into two parts:
+
+Car myCar                  = new SportsCar("Ford", "Mustang");
+│      │                              │
+│      │                              └── Object is created here
+│      └── Reference variable
+└── Reference type
+1. new SportsCar(...) creates the object
+
+This is the important part:
+
+new SportsCar("Ford", "Mustang")
+
+You are creating a SportsCar object.
+
+The object is not a Car object.
+
+You could write:
+
+SportsCar myCar = new SportsCar("Ford", "Mustang");
+
+and that would also be valid.
+
+2. Car myCar is the reference
+
+Here:
+
+Car myCar
+
+myCar is a reference variable whose type is Car.
+
+It is allowed because:
+
+class SportsCar implements Car
+
+So a SportsCar is a Car from the interface's perspective.
+
+Think:
+
+             Car (interface)
+                ↑
+                │ implements
+                │
+          SportsCar (class)
+                │
+                │
+          actual object
+       new SportsCar(...)
+
+Therefore:
+
+Car myCar = new SportsCar(...);
+
+means:
+
+"Create a SportsCar object, but interact with it through the Car interface."
+
+
+Compare:
+
+Car myCar = new SportsCar();
+Part	        Meaning
+Car	            Reference type
+myCar	        Reference variable
+new SportsCar()	Actual object being created
+
+
+@Override is a Java annotation that tells the compiler:
+
+"This method is supposed to override a method that exists in the parent class or interface."
+
+In your code:
+
+interface Car {
+    void startEngine();
+}
+
+And:
+
+class SportsCar implements Car {
+
+    @Override
+    public void startEngine() {
+        isEngineOn = true;
+        System.out.println("Engine starts!");
+    }
+}
+What is happening?
+
+The Car interface says:
+
+void startEngine();
+
+It basically says:
+
+"Any class that implements me MUST provide a startEngine() method."
+
+So SportsCar provides the implementation:
+
+public void startEngine() {
+    ...
+}
+
+And we put:
+
+@Override
+
+above it to tell Java:
+
+"I'm implementing/overriding the startEngine() method declared by Car."
+
+Why is @Override useful?
+
+The biggest benefit is that the compiler catches mistakes for you.
+
+Suppose you accidentally write:
+
+@Override
+public void startEngin() {  // Typo!
+    ...
+}
+
+Java will give you an error because there is no startEngin() method in Car.
+
+Without @Override:
+
+public void startEngin() {
+    ...
+}
+
+Java would simply treat it as a new method, and you might not notice the mistake.
+
+So @Override acts like a safety check.
+
+In your code
+
+You have:
+
+interface Car {
+    void startEngine();
+    void shiftGear(int gear);
+    void accelerate();
+    void brake();
+    void stopEngine();
+}
+
+Then SportsCar has:
+
+@Override
+public void startEngine() { ... }
+
+@Override
+public void shiftGear(int gear) { ... }
+
+@Override
+public void accelerate() { ... }
+
+@Override
+public void brake() { ... }
+
+@Override
+public void stopEngine() { ... }
+
+Each @Override is saying:
+
+Car says → "You must have this method."
+
+SportsCar says → "Here's my implementation of that method."
+One small terminology point
+
+With an interface, you'll often hear people say the class is "overriding" the interface method, although technically you're implementing an abstract interface method.
+
+
+                 USER / OUTSIDE WORLD
+                         │
+                         ▼
+              ┌─────────────────────┐
+              │    Car Interface    │
+              │                     │
+              │ startEngine()       │
+              │ shiftGear()         │
+              │ accelerate()        │
+              │ brake()             │
+              │ stopEngine()        │
+              └──────────┬──────────┘
+                         │
+                    implements
+                         │
+                         ▼
+              ┌─────────────────────┐
+              │     SportsCar       │
+              │                     │
+              │ isEngineOn          │
+              │ currentSpeed        │
+              │ currentGear         │
+              │                     │
+              │ HOW everything      │
+              │ actually works      │
+              └─────────────────────┘
+
+The interface is the abstraction layer.
+
+
+Encapsulation in Java
+
+Definition:
+
+Encapsulation is the process of bundling data (variables) and the methods that operate on that data inside a class, while restricting direct access to the internal data.
+
+How do we achieve it?
+
+Mainly using:
+
+class → bundles data + behavior together
+private → hides/restricts direct access to data
+public methods → provide controlled access
+Getters → read private data
+Setters → modify private data when appropriate
+Example
+class Car {
+    private int speed;
+
+    public int getSpeed() {
+        return speed;
+    }
+
+    public void accelerate() {
+        speed += 20;
+    }
+}
+
+Outside code:
+
+Car car = new Car();
+
+car.accelerate();       // ✅ Allowed
+System.out.println(car.getSpeed());  // ✅ Allowed
+
+car.speed = 500;        // ❌ Not allowed
+
+Instead of allowing:
+
+car.speed = 500;
+
+we control how speed changes:
+
+car.accelerate();
+
+This gives the object control over its own state.
+
+Benefits
+Data protection — prevents direct manipulation of internal data.
+Controlled access — decide how data can be read/modified.
+Maintainability — internal implementation can change without affecting outside code.
+Validation — setters/methods can validate values before changing data.
+
+For example:
+
+public void setSpeed(int speed) {
+    if (speed >= 0 && speed <= 300) {
+        this.speed = speed;
+    }
+}
+
+Now invalid values can be rejected.
+
+Encapsulation vs Abstraction
+Encapsulation	Abstraction
+Protects data/state	Hides implementation details
+Controls access	Controls what is exposed
+Mainly achieved using private, getters, setters, access modifiers	Mainly achieved using interfaces and abstract classes
+Focus: HOW data is accessed/modified	Focus: WHAT the object can do
+Example: private int speed	Example: accelerate() in Car interface
+Super-short way to remember
+
+🔒 Encapsulation = Protect the DATA
+🎭 Abstraction = Hide the IMPLEMENTATION
