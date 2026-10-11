@@ -1,0 +1,171 @@
+# Java Runtime Polymorphism and Strategy Design Pattern
+
+## 1. Object Creation at Runtime
+
+Consider the following code:
+
+```java
+Robot robot1 = new CompanionRobot(
+    new NormalWalk(),
+    new NormalTalk(),
+    new NoFly()
+);
+```
+
+When this statement executes:
+
+1. `new NormalWalk()` creates a `NormalWalk` object.
+2. `new NormalTalk()` creates a `NormalTalk` object.
+3. `new NoFly()` creates a `NoFly` object.
+4. `new CompanionRobot(...)` creates a `CompanionRobot` object and passes the three strategy objects to its constructor.
+
+The constructor stores the references to these objects in the corresponding behavior variables.
+
+```java
+this.walkBehavior = w;
+this.talkBehavior = t;
+this.flyBehavior = f;
+```
+
+## 2. Reference Type vs. Actual Object Type
+
+```java
+Robot robot1 = new CompanionRobot(...);
+```
+
+- **Reference type:** `Robot`
+- **Actual object type:** `CompanionRobot`
+
+The reference type determines which methods can be accessed through the reference, while the actual object type determines which overridden implementation executes at runtime.
+
+## 3. How Strategy Objects Work
+
+The `Robot` class delegates each behavior to its corresponding strategy object.
+
+```java
+public void walk() {
+    walkBehavior.walk();
+}
+
+public void talk() {
+    talkBehavior.talk();
+}
+
+public void fly() {
+    flyBehavior.fly();
+}
+```
+
+For example, if `walkBehavior` references a `NormalWalk` object, calling `walkBehavior.walk()` executes the `walk()` method implemented by `NormalWalk`.
+
+### Execution Flow
+
+```text
+robot1.walk()
+     |
+     v
+Robot.walk()
+     |
+     v
+walkBehavior.walk()
+     |
+     v
+NormalWalk.walk()
+     |
+     v
+"Walking normally..."
+```
+
+Similarly:
+
+- `talkBehavior` referencing `NormalTalk` executes `NormalTalk.talk()`.
+- `flyBehavior` referencing `NoFly` executes `NoFly.fly()`.
+
+## 4. What Happens When We Change the Strategy?
+
+Suppose we create a robot with different behaviors:
+
+```java
+Robot robot1 = new CompanionRobot(
+    new NoWalk(),
+    new NormalTalk(),
+    new NoFly()
+);
+```
+
+Now:
+
+```java
+robot1.walk();
+```
+
+Output:
+
+```text
+Cannot walk.
+```
+
+We changed the walking behavior without modifying the `Robot` class.
+
+This is the main advantage of the Strategy Design Pattern: **we can change an object's behavior by supplying different strategy objects instead of rewriting the main class.**
+
+## 5. Runtime Polymorphism in `projection()`
+
+The `Robot` class declares an abstract method:
+
+```java
+public abstract void projection();
+```
+
+Each subclass provides its own implementation.
+
+**CompanionRobot:**
+
+```java
+public void projection() {
+    System.out.println("Displaying friendly companion features...");
+}
+```
+
+**WorkerRobot:**
+
+```java
+public void projection() {
+    System.out.println("Displaying worker efficiency stats...");
+}
+```
+
+When we execute:
+
+```java
+Robot robot1 = new CompanionRobot(...);
+robot1.projection();
+```
+
+Java executes `CompanionRobot`'s implementation because the actual object is a `CompanionRobot`.
+
+For a `WorkerRobot` object, Java executes `WorkerRobot`'s implementation instead.
+
+This is called **runtime polymorphism**.
+
+## 6. Strategy Pattern vs. Runtime Polymorphism
+
+| Concept | Meaning |
+|---|---|
+| Object creation | `new NormalWalk()` creates a strategy object. |
+| Interface reference | `WalkableRobot` can refer to any object implementing that interface. |
+| Runtime polymorphism | Java executes the overridden implementation belonging to the actual object's class. |
+| Strategy Design Pattern | Behavior is delegated to interchangeable strategy objects. |
+| Abstract method | Requires concrete subclasses to provide an implementation. |
+
+## 7. Important Takeaways
+
+1. The `new` keyword creates objects when the statement executes.
+2. An interface reference can refer to an object of any class implementing that interface.
+3. The Strategy Pattern allows us to supply different behaviors to the same robot class.
+4. Runtime polymorphism determines which overridden implementation executes.
+5. `walk()`, `talk()`, and `fly()` delegate to separate strategy objects.
+6. `projection()` uses inheritance and method overriding, rather than a separate behavior strategy.
+7. We can change the robot's behaviors without changing the code inside the `Robot` class.
+
+**One-line summary:** Object creation establishes which objects are referenced, and runtime polymorphism determines which overridden implementation executes when a method is called.

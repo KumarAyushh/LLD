@@ -1,0 +1,66 @@
+## Problem without synchronization (race condition)
+- Thread A checks instance == null -> true
+- Thread B checks instance == null -> true
+- Both create objects -> 2 instances -> singleton broken
+
+## What `synchronized` does
+- Uses `Singleton.class` as a lock (monitor).
+- Only ONE thread can hold the lock at a time; others wait.
+- Guarantees only one thread runs the creation code at a time.
+
+## Why two checks?
+- **1st check (outside lock):** after the instance exists, calls return immediately
+  without locking -> fast. Locking is paid only during the first few calls.
+- **2nd check (inside lock):** a thread that waited for the lock must re-check,
+  because another thread may have created the instance meanwhile.
+  Without it, the waiting thread would create a 2nd object.
+- Alternative: `synchronized` on the whole method is correct but slow, also it is costly
+  (locks on EVERY call, forever).
+
+## Why `volatile` is required
+`instance = new Singleton()` is NOT one step:
+1. Allocate memory
+2. Run constructor
+3. Assign reference to `instance`
+
+The JVM/CPU may reorder this to 1 -> 3 -> 2.
+Another thread could then see `instance != null` at the 1st check and use a
+HALF-CONSTRUCTED object.
+`volatile` prevents this reordering and ensures visibility across threads.
+-> Without volatile, double-checked locking is BROKEN in Java. (Common interview question)
+
+## What if two threads reach `synchronized` at the EXACT same time?
+- Every object has a lock word in its header (unlocked / locked by thread X).
+- Acquiring the lock = changing that word using an atomic CPU instruction:
+  **CAS (Compare-And-Swap)**, on x86 `LOCK CMPXCHG`.
+  - "If still unlocked -> set to locked-by-me (success), else do nothing (fail)."
+  - It is indivisible; no other core can interfere in the middle.
+- Hardware tie-breaker: **cache coherence (MESI)** gives exclusive ownership of
+  a memory location to only ONE core at a time -> simultaneous writes are
+  forced into an order.
+- Result: exactly ONE thread's CAS succeeds; the other fails.
+- Who wins is **non-deterministic** (nanosecond timing), so code must be correct
+  regardless of the winner -> that's why the 2nd check exists.
+
+## What happens to the losing thread
+1. May **spin** briefly (retry CAS in a loop).
+2. If the lock is still held, the JVM **parks** (sleeps) the thread in the lock's wait queue.
+3. When the winner exits `synchronized`, the lock is released and a waiting thread is woken.
+4. That thread acquires the lock, does the 2nd check, sees instance != null, and skips creation.
+
+## Happens-before
+- Releasing a lock -> everything written before the release is visible to the
+  next thread that acquires the SAME lock.
+- So the waiting thread reliably sees the new instance, not a stale null.
+
+## Testing tip
+- A single-threaded `main` (s1 == s2 -> true) does NOT prove thread safety.
+- To see the race: call getInstance() from multiple threads, remove
+  synchronized/volatile, and add Thread.sleep() in the constructor.
+  The constructor message will print more than once.
+
+## One-line summary
+synchronized = only one thread creates the instance;
+1st check = speed; 2nd check = correctness; volatile = no half-built object;
+simultaneous lock attempts are resolved by atomic CAS + cache coherence (exactly one wins).
+##Fixed the volatile thing after this

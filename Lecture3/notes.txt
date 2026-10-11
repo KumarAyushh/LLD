@@ -1,0 +1,2341 @@
+# Java Inheritance
+
+## 1. What is Inheritance?
+
+**Inheritance** is an OOP mechanism where a child class acquires/reuses accessible properties and behaviors of a parent class.
+
+It represents an **IS-A relationship**.
+
+```java
+class Animal {
+    void eat() {
+        System.out.println("Eating");
+    }
+}
+
+class Dog extends Animal {
+    void bark() {
+        System.out.println("Barking");
+    }
+}
+```
+
+```text
+Animal
+   ↑
+  Dog
+```
+
+`Dog` IS-A `Animal`.
+
+```java
+Dog d = new Dog();
+
+d.eat();   // inherited
+d.bark();  // Dog's own method
+```
+
+---
+
+# 2. Why Use Inheritance?
+
+Inheritance provides:
+
+* **Code reuse** — common functionality can be placed in the parent.
+* **Less duplication** — child classes don't need to repeat common code.
+* **Organization** — related classes can be represented as a hierarchy.
+* **Extensibility** — child classes can add their own behavior.
+* **Polymorphism** — inheritance enables runtime polymorphism.
+
+Example:
+
+```text
+              Animal
+             /      \
+           Dog      Cat
+```
+
+Common behavior:
+
+```text
+Animal → name
+Animal → age
+Animal → eat()
+Animal → sleep()
+```
+
+Dog-specific:
+
+```text
+Dog → bark()
+```
+
+Cat-specific:
+
+```text
+Cat → meow()
+```
+
+---
+
+# 3. `extends` Keyword
+
+Java uses `extends` for class inheritance.
+
+```java
+class Child extends Parent {
+}
+```
+
+Example:
+
+```java
+class Animal {
+    void eat() {
+        System.out.println("Eating");
+    }
+}
+
+class Dog extends Animal {
+    void bark() {
+        System.out.println("Barking");
+    }
+}
+```
+
+```java
+Dog d = new Dog();
+
+d.eat();
+d.bark();
+```
+
+---
+
+# 4. IS-A Relationship
+
+Inheritance represents an **IS-A** relationship.
+
+Examples:
+
+```text
+Dog IS-A Animal
+Cat IS-A Animal
+Car IS-A Vehicle
+Student IS-A Person
+```
+
+If the relationship does not logically represent "is a", inheritance is usually not appropriate.
+
+---
+
+# 5. What Does a Child Inherit?
+
+A child can access inherited members according to Java's access rules.
+
+Example:
+
+```java
+class Animal {
+    String name;
+
+    void eat() {
+        System.out.println("Eating");
+    }
+
+    void sleep() {
+        System.out.println("Sleeping");
+    }
+}
+
+class Dog extends Animal {
+    void bark() {
+        System.out.println("Barking");
+    }
+}
+```
+
+A `Dog` can use:
+
+```java
+Dog d = new Dog();
+
+d.name;
+d.eat();
+d.sleep();
+d.bark();
+```
+
+Important:
+
+> Inheritance does NOT mean Java literally copies the parent's source code into the child.
+
+The child gets access to inherited members according to Java's inheritance and access-control rules.
+
+---
+
+# 6. Access Modifiers and Inheritance
+
+Consider:
+
+```java
+class Animal {
+
+    public int a;
+    protected int b;
+    int c;
+    private int d;
+}
+```
+
+A child class can access:
+
+| Modifier                | Accessible directly in Child? |
+| ----------------------- | ----------------------------- |
+| `public`                | Yes                           |
+| `protected`             | Yes                           |
+| default/package-private | Yes, if in same package       |
+| `private`               | No                            |
+
+Example:
+
+```java
+class Animal {
+    public int a = 10;
+    protected int b = 20;
+    int c = 30;
+    private int d = 40;
+}
+
+class Dog extends Animal {
+
+    void test() {
+        System.out.println(a); // Yes
+        System.out.println(b); // Yes
+        System.out.println(c); // Yes if same package
+        System.out.println(d); // No
+    }
+}
+```
+
+### Important
+
+`private` members are not directly accessible by child classes.
+
+Inheritance does not break **encapsulation**.
+
+---
+
+# 7. Parent and Child Objects
+
+```java
+class Animal {
+    void eat() {
+        System.out.println("Eating");
+    }
+}
+
+class Dog extends Animal {
+    void bark() {
+        System.out.println("Barking");
+    }
+}
+```
+
+A Dog object:
+
+```java
+Dog d = new Dog();
+```
+
+can access:
+
+```java
+d.eat();   // inherited
+d.bark();  // Dog-specific
+```
+
+But an Animal object:
+
+```java
+Animal a = new Animal();
+```
+
+cannot access:
+
+```java
+a.bark(); // ERROR
+```
+
+because `bark()` belongs to `Dog`, not `Animal`.
+
+---
+
+# 8. Reference Type vs Object Type
+
+This is one of the most important concepts in Java.
+
+```java
+Animal a = new Dog();
+```
+
+There are two types:
+
+```text
+Animal a     → Reference type
+new Dog()    → Actual object type
+```
+
+So:
+
+```java
+Animal a = new Dog();
+```
+
+means:
+
+> An Animal reference is pointing to a Dog object.
+
+---
+
+# 9. What Can a Reference Access?
+
+The **reference type** determines what members you can directly access.
+
+```java
+Animal a = new Dog();
+
+a.eat();   // Yes, Animal has eat()
+a.bark();  // ERROR, Animal doesn't declare bark()
+```
+
+Even though the actual object is a Dog, the compiler sees:
+
+```text
+Animal a
+```
+
+when checking whether the method can be accessed.
+
+### Rule
+
+> **Reference type determines what you can access.**
+
+---
+
+# 10. Runtime Method Selection
+
+For overridden instance methods, the **actual object type** determines which implementation executes.
+
+```java
+class Animal {
+    void sound() {
+        System.out.println("Animal sound");
+    }
+}
+
+class Dog extends Animal {
+    @Override
+    void sound() {
+        System.out.println("Bark");
+    }
+}
+```
+
+Now:
+
+```java
+Animal a = new Dog();
+
+a.sound();
+```
+
+Output:
+
+```text
+Bark
+```
+
+Why?
+
+Because the actual object is:
+
+```java
+new Dog()
+```
+
+and Dog overrides `sound()`.
+
+### Important Rule
+
+```text
+Reference type → determines what can be accessed
+Object type    → determines overridden instance method behavior
+```
+
+This is the foundation of runtime polymorphism.
+
+---
+
+# 11. Method Overriding
+
+**Method overriding** occurs when a child class provides its own implementation of an inherited parent method.
+
+```java
+class Animal {
+
+    void sound() {
+        System.out.println("Animal sound");
+    }
+}
+
+class Dog extends Animal {
+
+    @Override
+    void sound() {
+        System.out.println("Bark");
+    }
+}
+```
+
+The child method overrides the parent's method.
+
+---
+
+# 12. `@Override`
+
+Use:
+
+```java
+@Override
+```
+
+when overriding a method.
+
+```java
+@Override
+void sound() {
+    System.out.println("Bark");
+}
+```
+
+It tells the compiler:
+
+> "I intend to override a parent method."
+
+If you accidentally write a method that doesn't actually override the parent method, the compiler reports an error.
+
+Therefore, `@Override` helps prevent mistakes.
+
+---
+
+# 13. Runtime Polymorphism
+
+Runtime polymorphism occurs when a parent reference points to a child object and an overridden instance method is resolved according to the actual object at runtime.
+
+```java
+Animal a = new Dog();
+
+a.sound();
+```
+
+If `Dog` overrides `sound()`, Dog's version runs.
+
+Example:
+
+```java
+Animal a1 = new Dog();
+Animal a2 = new Cat();
+
+a1.sound(); // Dog's sound
+a2.sound(); // Cat's sound
+```
+
+This is also called:
+
+* Runtime polymorphism
+* Dynamic method dispatch
+
+---
+
+# 14. `super` Keyword
+
+`super` refers to the parent-class part of the current object.
+
+There are three major uses:
+
+1. Access parent variable
+2. Call parent method
+3. Call parent constructor
+
+---
+
+## 14.1 Access Parent Variable
+
+```java
+class Animal {
+    String name = "Animal";
+}
+
+class Dog extends Animal {
+    String name = "Dog";
+
+    void print() {
+        System.out.println(name);
+        System.out.println(super.name);
+    }
+}
+```
+
+Output:
+
+```text
+Dog
+Animal
+```
+
+```java
+name
+```
+
+refers to the current class's variable.
+
+```java
+super.name
+```
+
+refers to the parent class's variable.
+
+---
+
+# 15. Calling Parent Method Using `super`
+
+```java
+class Animal {
+
+    void sound() {
+        System.out.println("Animal sound");
+    }
+}
+
+class Dog extends Animal {
+
+    @Override
+    void sound() {
+        super.sound();
+        System.out.println("Bark");
+    }
+}
+```
+
+Output:
+
+```text
+Animal sound
+Bark
+```
+
+```java
+super.sound();
+```
+
+means:
+
+> Call the parent class's version of `sound()`.
+
+---
+
+# 16. Calling Parent Constructor Using `super()`
+
+```java
+class Animal {
+
+    Animal() {
+        System.out.println("Animal constructor");
+    }
+}
+
+class Dog extends Animal {
+
+    Dog() {
+        super();
+        System.out.println("Dog constructor");
+    }
+}
+```
+
+Output:
+
+```text
+Animal constructor
+Dog constructor
+```
+
+`super()` calls the parent constructor.
+
+---
+
+# 17. Constructor Chaining
+
+When a child object is created, constructors execute from the topmost parent toward the child.
+
+```java
+class Animal {
+
+    Animal() {
+        System.out.println("Animal");
+    }
+}
+
+class Dog extends Animal {
+
+    Dog() {
+        System.out.println("Dog");
+    }
+}
+
+class Puppy extends Dog {
+
+    Puppy() {
+        System.out.println("Puppy");
+    }
+}
+```
+
+```java
+Puppy p = new Puppy();
+```
+
+Output:
+
+```text
+Animal
+Dog
+Puppy
+```
+
+Conceptually:
+
+```text
+Puppy constructor
+       ↓
+Dog constructor
+       ↓
+Animal constructor
+       ↓
+Object constructor
+```
+
+---
+
+# 18. Implicit `super()`
+
+If you don't explicitly write a constructor call in a child constructor:
+
+```java
+class Dog extends Animal {
+
+    Dog() {
+        System.out.println("Dog");
+    }
+}
+```
+
+Java implicitly inserts:
+
+```java
+Dog() {
+    super();
+    System.out.println("Dog");
+}
+```
+
+Therefore, the parent no-argument constructor is called automatically.
+
+### Important
+
+This automatic `super()` works only if the parent has an accessible no-argument constructor.
+
+Example:
+
+```java
+class Animal {
+
+    Animal(int age) {
+    }
+}
+```
+
+Now:
+
+```java
+class Dog extends Animal {
+
+    Dog() {
+    }
+}
+```
+
+will produce a compilation error because Java tries to call:
+
+```java
+super();
+```
+
+but `Animal()` does not exist.
+
+You must explicitly call:
+
+```java
+class Dog extends Animal {
+
+    Dog() {
+        super(10);
+    }
+}
+```
+
+---
+
+# 19. Constructors Are Not Inherited
+
+Constructors are **not inherited**.
+
+If:
+
+```java
+class Animal {
+
+    Animal(int age) {
+    }
+}
+```
+
+this does NOT automatically create:
+
+```java
+Dog(int age)
+```
+
+in the child.
+
+You must define the child constructor yourself:
+
+```java
+class Dog extends Animal {
+
+    Dog(int age) {
+        super(age);
+    }
+}
+```
+
+### Constructors also cannot be overridden.
+
+Why?
+
+Because constructors are not inherited and are not regular methods.
+
+---
+
+# 20. Object Class
+
+Every Java class ultimately inherits from:
+
+```java
+Object
+```
+
+Example:
+
+```text
+Object
+   ↑
+Animal
+   ↑
+Dog
+   ↑
+Puppy
+```
+
+If you write:
+
+```java
+class Animal {
+}
+```
+
+it ultimately extends `Object`.
+
+`Object` provides important methods such as:
+
+```java
+toString()
+equals()
+hashCode()
+getClass()
+```
+
+Therefore, objects of your classes can use these methods.
+
+---
+
+# 21. Types of Class Inheritance Supported by Java
+
+## 21.1 Single Inheritance
+
+One parent → one child.
+
+```text
+Animal
+   ↑
+  Dog
+```
+
+```java
+class Dog extends Animal {
+}
+```
+
+Supported.
+
+---
+
+## 21.2 Multilevel Inheritance
+
+Parent → child → grandchild.
+
+```text
+Animal
+   ↑
+  Dog
+   ↑
+ Puppy
+```
+
+```java
+class Animal {
+}
+
+class Dog extends Animal {
+}
+
+class Puppy extends Dog {
+}
+```
+
+Supported.
+
+---
+
+## 21.3 Hierarchical Inheritance
+
+One parent → multiple children.
+
+```text
+       Animal
+       /    \
+     Dog    Cat
+```
+
+```java
+class Animal {
+}
+
+class Dog extends Animal {
+}
+
+class Cat extends Animal {
+}
+```
+
+Supported.
+
+---
+
+# 22. Multiple Inheritance Through Classes
+
+Java does **not** support multiple inheritance of classes.
+
+This is invalid:
+
+```java
+class A {
+}
+
+class B {
+}
+
+class C extends A, B { // ERROR
+}
+```
+
+### Why?
+
+It can cause ambiguity.
+
+Example:
+
+```java
+class A {
+
+    void show() {
+        System.out.println("A");
+    }
+}
+
+class B {
+
+    void show() {
+        System.out.println("B");
+    }
+}
+```
+
+If C inherited both:
+
+```text
+A.show()
+B.show()
+```
+
+then:
+
+```java
+C c = new C();
+
+c.show();
+```
+
+would be ambiguous.
+
+Which method should execute?
+
+```text
+A.show() ?
+B.show() ?
+```
+
+Java avoids this problem by not allowing multiple inheritance through classes.
+
+---
+
+# 23. Multiple Inheritance Through Interfaces
+
+Java does allow a class to implement multiple interfaces.
+
+```java
+interface A {
+    void show();
+}
+
+interface B {
+    void display();
+}
+
+class C implements A, B {
+
+    public void show() {
+        System.out.println("Show");
+    }
+
+    public void display() {
+        System.out.println("Display");
+    }
+}
+```
+
+A class can:
+
+* extend **one class**
+* implement **multiple interfaces**
+
+Example:
+
+```java
+class C extends A implements B, D {
+}
+```
+
+Conceptually:
+
+```text
+          Class A
+             ↑
+             |
+             C
+           /   \
+     Interface B  Interface D
+```
+
+---
+
+# 24. Interface Default Method Conflict
+
+Interfaces can contain `default` methods.
+
+```java
+interface A {
+
+    default void show() {
+        System.out.println("A");
+    }
+}
+
+interface B {
+
+    default void show() {
+        System.out.println("B");
+    }
+}
+```
+
+If:
+
+```java
+class C implements A, B {
+}
+```
+
+there is a conflict because both interfaces provide `show()`.
+
+The class must resolve it:
+
+```java
+class C implements A, B {
+
+    @Override
+    public void show() {
+        A.super.show();
+    }
+}
+```
+
+Now A's implementation is explicitly selected.
+
+---
+
+# 25. `final` and Inheritance
+
+`final` can restrict inheritance and overriding.
+
+---
+
+## 25.1 Final Class
+
+```java
+final class Animal {
+}
+```
+
+A final class cannot be extended:
+
+```java
+class Dog extends Animal { // ERROR
+}
+```
+
+---
+
+## 25.2 Final Method
+
+```java
+class Animal {
+
+    final void eat() {
+        System.out.println("Eating");
+    }
+}
+```
+
+A child cannot override it:
+
+```java
+class Dog extends Animal {
+
+    @Override
+    void eat() { // ERROR
+    }
+}
+```
+
+---
+
+## 25.3 Final Variable
+
+```java
+final int x = 10;
+```
+
+The variable cannot be reassigned.
+
+```java
+x = 20; // ERROR
+```
+
+---
+
+# 26. Static Methods and Inheritance
+
+Static methods behave differently from instance methods.
+
+Example:
+
+```java
+class Animal {
+
+    static void show() {
+        System.out.println("Animal");
+    }
+}
+
+class Dog extends Animal {
+
+    static void show() {
+        System.out.println("Dog");
+    }
+}
+```
+
+This is **not overriding**.
+
+It is called:
+
+> **Method hiding**
+
+Example:
+
+```java
+Animal a = new Dog();
+
+a.show();
+```
+
+Output:
+
+```text
+Animal
+```
+
+Why?
+
+Static methods are associated with the class and are not dynamically dispatched like overridden instance methods.
+
+### Remember:
+
+```text
+Instance method → overriding → runtime dispatch
+Static method   → method hiding → compile-time/class-based resolution
+```
+
+---
+
+# 27. Private Methods Cannot Be Overridden
+
+Example:
+
+```java
+class Animal {
+
+    private void sound() {
+        System.out.println("Animal");
+    }
+}
+```
+
+```java
+class Dog extends Animal {
+
+    void sound() {
+        System.out.println("Dog");
+    }
+}
+```
+
+The Dog method is **not an override**.
+
+Why?
+
+Because the parent's `sound()` is private and therefore not accessible to the child.
+
+Private methods belong only to their declaring class.
+
+---
+
+# 28. Overloading vs Overriding
+
+## Method Overloading
+
+Usually occurs within the same class.
+
+```java
+void add(int a, int b) {
+}
+
+void add(int a, int b, int c) {
+}
+```
+
+Same method name but different parameter lists.
+
+Resolved at:
+
+> **Compile time**
+
+---
+
+## Method Overriding
+
+Requires inheritance.
+
+```java
+class Animal {
+
+    void sound() {
+    }
+}
+
+class Dog extends Animal {
+
+    @Override
+    void sound() {
+    }
+}
+```
+
+Same method signature, child provides a new implementation.
+
+Resolved at:
+
+> **Runtime** for instance methods.
+
+### Quick memory trick
+
+```text
+Overloading  → Compile time
+Overriding   → Runtime
+```
+
+---
+
+# 29. Upcasting
+
+Converting/treating a child reference as a parent reference is called **upcasting**.
+
+```java
+Dog d = new Dog();
+
+Animal a = d;
+```
+
+Or directly:
+
+```java
+Animal a = new Dog();
+```
+
+This is safe because:
+
+```text
+Dog IS-A Animal
+```
+
+Upcasting is usually implicit.
+
+```text
+Dog
+ ↑
+Animal reference
+```
+
+---
+
+# 30. Downcasting
+
+Converting a parent reference back to a child reference is called **downcasting**.
+
+```java
+Animal a = new Dog();
+
+Dog d = (Dog) a;
+
+d.bark();
+```
+
+The cast:
+
+```java
+(Dog)
+```
+
+tells Java to treat the reference as a Dog.
+
+### Important
+
+Downcasting is only valid when the actual object really is of that child type.
+
+This:
+
+```java
+Animal a = new Cat();
+
+Dog d = (Dog) a;
+```
+
+compiles but throws:
+
+```text
+ClassCastException
+```
+
+at runtime.
+
+---
+
+# 31. `instanceof`
+
+Use `instanceof` to check the actual object's type before downcasting.
+
+```java
+if (a instanceof Dog) {
+    Dog d = (Dog) a;
+    d.bark();
+}
+```
+
+Modern Java also supports pattern matching:
+
+```java
+if (a instanceof Dog d) {
+    d.bark();
+}
+```
+
+This combines the type check and cast.
+
+---
+
+# 32. Abstract Classes and Inheritance
+
+Inheritance is commonly used with abstract classes.
+
+```java
+abstract class Animal {
+
+    abstract void sound();
+
+    void eat() {
+        System.out.println("Eating");
+    }
+}
+```
+
+A child must implement the abstract method:
+
+```java
+class Dog extends Animal {
+
+    @Override
+    void sound() {
+        System.out.println("Bark");
+    }
+}
+```
+
+You cannot create an object directly from the abstract class:
+
+```java
+Animal a = new Animal(); // ERROR
+```
+
+But you can use:
+
+```java
+Animal a = new Dog(); // OK
+```
+
+This combines:
+
+```text
+Inheritance
++
+Abstraction
++
+Polymorphism
+```
+
+---
+
+# 33. Inheritance and Encapsulation
+
+These are different OOP concepts.
+
+### Encapsulation
+
+Controls access to data and protects an object's internal state.
+
+Example:
+
+```java
+private int age;
+```
+
+with controlled access:
+
+```java
+getAge()
+setAge()
+```
+
+### Inheritance
+
+Allows a child class to reuse/extend behavior from a parent.
+
+```java
+class Dog extends Animal
+```
+
+### Difference
+
+```text
+Encapsulation → Protects/controls access
+Inheritance   → Reuses/extends behavior
+```
+
+Inheritance does not mean everything in the parent becomes publicly accessible.
+
+---
+
+# 34. Composition
+
+Composition represents a **HAS-A relationship**.
+
+Example:
+
+```java
+class Engine {
+
+    void start() {
+        System.out.println("Engine started");
+    }
+}
+
+class Car {
+
+    Engine engine;
+}
+```
+
+Here:
+
+```text
+Car HAS-A Engine
+```
+
+while:
+
+```java
+class Dog extends Animal
+```
+
+means:
+
+```text
+Dog IS-A Animal
+```
+
+---
+
+# 35. Class as a Data Type
+
+A class name can be used as a data type.
+
+For example:
+
+```java
+class Engine {
+}
+```
+
+Then:
+
+```java
+Engine engine;
+```
+
+Here:
+
+```text
+Engine → Data type
+engine → Reference variable
+```
+
+This is similar to:
+
+```java
+int age;
+```
+
+where:
+
+```text
+int → Data type
+age → Variable
+```
+
+But `Engine` is a **reference type**, not a primitive type.
+
+---
+
+# 36. Creating an Object of a Class Type
+
+```java
+Engine e = new Engine();
+```
+
+Here:
+
+```text
+Engine → Reference type
+e      → Reference variable
+new Engine() → Object
+```
+
+The variable `e` stores a reference to the Engine object.
+
+Similarly:
+
+```java
+Car car = new Car();
+```
+
+`car` references a Car object.
+
+---
+
+# 37. Composition Example
+
+```java
+class Engine {
+
+    void start() {
+        System.out.println("Engine started");
+    }
+}
+
+class Car {
+
+    Engine engine = new Engine();
+}
+```
+
+Now:
+
+```java
+Car car = new Car();
+
+car.engine.start();
+```
+
+Conceptually:
+
+```text
+Car object
+    |
+    | engine
+    ↓
+Engine object
+    |
+    └── start()
+```
+
+Therefore:
+
+```text
+Car HAS-A Engine
+```
+
+---
+
+# 38. Inheritance vs Composition
+
+## Inheritance
+
+```java
+class Dog extends Animal
+```
+
+Relationship:
+
+```text
+Dog IS-A Animal
+```
+
+Used when there is a genuine hierarchical relationship.
+
+---
+
+## Composition
+
+```java
+class Car {
+    Engine engine;
+}
+```
+
+Relationship:
+
+```text
+Car HAS-A Engine
+```
+
+Used when one object contains/uses another object.
+
+Examples:
+
+```text
+Car HAS-A Engine
+House HAS-A Room
+Student HAS-A Address
+Computer HAS-A CPU
+```
+
+### General rule
+
+```text
+IS-A  → Consider inheritance
+HAS-A → Consider composition
+```
+
+In real-world software design, composition is often preferred over inheritance when inheritance doesn't represent a strong IS-A relationship.
+
+---
+
+# 39. Complete Example
+
+```java
+class Animal {
+
+    protected String name;
+
+    Animal(String name) {
+        this.name = name;
+    }
+
+    void eat() {
+        System.out.println(name + " is eating");
+    }
+
+    void sound() {
+        System.out.println("Some animal sound");
+    }
+}
+```
+
+Child:
+
+```java
+class Dog extends Animal {
+
+    Dog(String name) {
+        super(name);
+    }
+
+    @Override
+    void sound() {
+        System.out.println(name + " says Bark");
+    }
+
+    void fetch() {
+        System.out.println(name + " is fetching");
+    }
+}
+```
+
+Usage:
+
+```java
+public class Main {
+
+    public static void main(String[] args) {
+
+        Animal a = new Dog("Bruno");
+
+        a.eat();
+        a.sound();
+    }
+}
+```
+
+Output:
+
+```text
+Bruno is eating
+Bruno says Bark
+```
+
+Why?
+
+```java
+Animal a = new Dog("Bruno");
+```
+
+Reference type:
+
+```text
+Animal
+```
+
+Actual object:
+
+```text
+Dog
+```
+
+Therefore:
+
+```java
+a.eat();
+```
+
+works because `eat()` exists in Animal.
+
+```java
+a.sound();
+```
+
+executes Dog's overridden `sound()`.
+
+But:
+
+```java
+a.fetch();
+```
+
+doesn't compile because `fetch()` isn't declared in Animal.
+
+---
+
+# 40. The Most Important Mental Model
+
+Whenever you see:
+
+```java
+Parent p = new Child();
+```
+
+ask two questions.
+
+### Question 1: What can I access?
+
+Look at the **reference type**:
+
+```java
+Parent p
+```
+
+Therefore, only members available through `Parent` can be directly accessed.
+
+### Question 2: Which overridden instance method runs?
+
+Look at the **actual object**:
+
+```java
+new Child()
+```
+
+Therefore, the child's overridden implementation runs.
+
+### Core rule
+
+```text
+Reference type
+      ↓
+What can be accessed
+
+Actual object type
+      ↓
+Which overridden instance method executes
+```
+
+---
+
+# 41. Inheritance Cheat Sheet
+
+| Concept             | Meaning                                      |
+| ------------------- | -------------------------------------------- |
+| `extends`           | Creates class inheritance                    |
+| Parent / Superclass | Class being inherited from                   |
+| Child / Subclass    | Class that inherits                          |
+| IS-A                | Relationship represented by inheritance      |
+| `super`             | Refers to parent-class members               |
+| `super()`           | Calls parent constructor                     |
+| `super.method()`    | Calls parent method                          |
+| `super.variable`    | Accesses parent variable                     |
+| `@Override`         | Indicates method overriding                  |
+| Upcasting           | Child → Parent reference                     |
+| Downcasting         | Parent reference → Child reference           |
+| `instanceof`        | Checks object's type                         |
+| Overriding          | Child provides new implementation            |
+| Overloading         | Same method name, different parameters       |
+| `final class`       | Cannot be inherited                          |
+| `final method`      | Cannot be overridden                         |
+| Constructor         | Not inherited or overridden                  |
+| `Object`            | Root class of Java class hierarchy           |
+| Composition         | HAS-A relationship                           |
+| Class as type       | A class name can be used as a reference type |
+
+---
+
+# 42. Key Rules to Memorize
+
+### Rule 1
+
+```java
+class Dog extends Animal
+```
+
+means:
+
+```text
+Dog IS-A Animal
+```
+
+### Rule 2
+
+Java supports **single inheritance for classes**.
+
+```text
+One class can extend only one class.
+```
+
+### Rule 3
+
+Java supports multiple interfaces.
+
+```java
+class C implements A, B, D
+```
+
+### Rule 4
+
+Constructors are **not inherited**.
+
+### Rule 5
+
+Constructors cannot be **overridden**.
+
+### Rule 6
+
+A child constructor automatically calls `super()` if no constructor call is explicitly written.
+
+### Rule 7
+
+`private` members are not directly accessible in child classes.
+
+### Rule 8
+
+`final` methods cannot be overridden.
+
+### Rule 9
+
+`final` classes cannot be extended.
+
+### Rule 10
+
+Static methods are **hidden**, not overridden.
+
+### Rule 11
+
+Private methods cannot be overridden.
+
+### Rule 12
+
+Overloading → compile time.
+
+### Rule 13
+
+Overriding → runtime for instance methods.
+
+### Rule 14
+
+```java
+Parent p = new Child();
+```
+
+is valid because Child IS-A Parent.
+
+### Rule 15
+
+The reference type controls what members can be accessed.
+
+### Rule 16
+
+The actual object controls which overridden instance method executes.
+
+### Rule 17
+
+Downcasting must be done carefully because an invalid cast causes `ClassCastException`.
+
+### Rule 18
+
+```text
+IS-A  → Inheritance
+HAS-A → Composition
+```
+
+### Rule 19
+
+A class can itself be used as a data type.
+
+```java
+Engine engine;
+```
+
+Here:
+
+```text
+Engine → reference type
+engine → reference variable
+```
+
+### Rule 20
+
+Every Java class ultimately inherits from `Object`.
+
+---
+
+# 43. One-Page Mental Map
+
+```text
+                         INHERITANCE
+                              |
+                    -----------------------
+                    |                     |
+                 extends               IS-A
+                    |
+              Parent → Child
+                    |
+          -----------------------
+          |          |          |
+        super      override    reuse
+          |
+    -----------------
+    |       |       |
+ variable  method constructor
+
+
+             POLYMORPHISM
+                  |
+        Parent reference
+                  |
+            Child object
+                  |
+        -------------------
+        |                 |
+   Upcasting        Runtime dispatch
+        |
+   Animal a = new Dog();
+
+
+             TYPES
+               |
+       -------------------
+       |                 |
+   Overloading       Overriding
+   Compile time      Runtime
+
+
+             RESTRICTIONS
+                  |
+       -------------------------
+       |           |           |
+   final class  final method private method
+      ↓             ↓             ↓
+  no extend    no override    no override
+
+
+             RELATIONSHIPS
+                  |
+       ----------------------
+       |                    |
+      IS-A                HAS-A
+       |                    |
+  Inheritance          Composition
+       |                    |
+ Dog extends Animal    Car has Engine
+```
+
+## Final mental model
+
+If you remember only this, remember:
+
+```java
+class Dog extends Animal
+```
+
+means:
+
+```text
+Dog IS-A Animal
+```
+
+and:
+
+```java
+class Car {
+    Engine engine;
+}
+```
+
+means:
+
+```text
+Car HAS-A Engine
+```
+
+where `Engine` is itself a class being used as a **reference data type**.
+
+And for:
+
+```java
+Animal a = new Dog();
+```
+
+remember:
+
+```text
+Animal → reference type
+Dog    → actual object type
+
+Reference type → what you can access
+Object type    → overridden instance method that runs
+```
+
+
+Inheritance Interface example fixed
+
+# Interface Inheritance in Java
+
+Java does **not** support multiple inheritance between classes:
+
+```java
+class A {
+}
+
+class B {
+}
+
+// ❌ Not allowed
+class C extends A, B {
+}
+```
+
+However, Java **does support multiple inheritance through interfaces**.
+
+## 1. A Class Implementing Multiple Interfaces
+
+```java
+interface A {
+    void show();
+}
+
+interface B {
+    void display();
+}
+
+class C implements A, B {
+
+    @Override
+    public void show() {
+        System.out.println("Show");
+    }
+
+    @Override
+    public void display() {
+        System.out.println("Display");
+    }
+}
+```
+
+Here:
+
+```java
+class C implements A, B
+```
+
+means:
+
+> Class `C` agrees to provide the behavior required by both interfaces `A` and `B`.
+
+So:
+
+```text
+       Interface A
+            \
+             \
+              C
+             /
+            /
+       Interface B
+```
+
+A class can implement **multiple interfaces**.
+
+---
+
+# 2. A Class Can Extend One Class AND Implement Multiple Interfaces
+
+This is also valid:
+
+```java
+class Parent {
+    void parentMethod() {
+        System.out.println("Parent");
+    }
+}
+
+interface A {
+    void show();
+}
+
+interface B {
+    void display();
+}
+
+class Child extends Parent implements A, B {
+
+    @Override
+    public void show() {
+        System.out.println("Show");
+    }
+
+    @Override
+    public void display() {
+        System.out.println("Display");
+    }
+}
+```
+
+The rule is:
+
+```text
+class Child extends ONE class
+              implements MULTIPLE interfaces
+```
+
+So this is valid:
+
+```java
+class Child extends Parent implements A, B, C
+```
+
+but this is not:
+
+```java
+class Child extends Parent1, Parent2  // ❌
+```
+
+---
+
+# 3. Interfaces Can Also Extend Multiple Interfaces
+
+This is another important form of interface inheritance.
+
+```java
+interface A {
+    void show();
+}
+
+interface B {
+    void display();
+}
+
+interface C extends A, B {
+    void test();
+}
+```
+
+This is valid.
+
+`C` inherits the contracts of both `A` and `B`.
+
+Therefore a class implementing `C` must provide all required methods:
+
+```java
+class D implements C {
+
+    @Override
+    public void show() {
+        System.out.println("Show");
+    }
+
+    @Override
+    public void display() {
+        System.out.println("Display");
+    }
+
+    @Override
+    public void test() {
+        System.out.println("Test");
+    }
+}
+```
+
+The hierarchy is:
+
+```text
+       A          B
+        \        /
+         \      /
+            C
+            |
+            D
+```
+
+So:
+
+```text
+A ──┐
+    ├──> C ──> D
+B ──┘
+```
+
+---
+
+# 4. Default Method Conflict
+
+Interfaces can contain `default` methods:
+
+```java
+interface A {
+
+    default void show() {
+        System.out.println("A");
+    }
+}
+
+interface B {
+
+    default void show() {
+        System.out.println("B");
+    }
+}
+```
+
+Now:
+
+```java
+class C implements A, B {
+}
+```
+
+is invalid because both interfaces provide a `show()` implementation.
+
+Java doesn't know which one to use.
+
+You must resolve the conflict:
+
+```java
+class C implements A, B {
+
+    @Override
+    public void show() {
+        A.super.show();
+    }
+}
+```
+
+Now `A`'s implementation is explicitly selected.
+
+You could also write your own implementation:
+
+```java
+class C implements A, B {
+
+    @Override
+    public void show() {
+        System.out.println("C");
+    }
+}
+```
+
+---
+
+# 5. Important Terminology
+
+There are two different relationships:
+
+### Class inheritance
+
+```java
+class Dog extends Animal
+```
+
+```text
+Dog IS-A Animal
+```
+
+### Interface implementation
+
+```java
+class Dog implements Animal
+```
+
+if `Animal` is an interface.
+
+```text
+Dog implements the contract of Animal
+```
+
+### Interface inheritance
+
+```java
+interface C extends A, B
+```
+
+Here `C` **inherits from multiple interfaces**.
+
+---
+
+# 6. Final Rule
+
+Remember:
+
+```text
+CLASS
+  ↓
+A class can extend only ONE class
+A class can implement MULTIPLE interfaces
+
+
+INTERFACE
+  ↓
+An interface can extend MULTIPLE interfaces
+```
+
+Examples:
+
+```java
+class Dog extends Animal
+```
+
+✅
+
+```java
+class Dog implements A, B, C
+```
+
+✅
+
+```java
+interface C extends A, B
+```
+
+✅
+
+```java
+class C extends A, B
+```
+
+❌

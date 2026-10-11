@@ -1,0 +1,281 @@
+# Strategy Design Pattern in Java — Object References and Runtime Polymorphism
+
+## 1. Understanding Object Creation
+
+Consider this statement:
+
+```java
+Robot robot1 = new CompanionRobot(
+    new NormalWalk(),
+    new NormalTalk(),
+    new NoFly()
+);
+```
+
+This statement has three important parts:
+
+- `Robot`: The declared type of the reference variable.
+- `robot1`: The reference variable that refers to the created object.
+- `new CompanionRobot(...)`: Creates the actual `CompanionRobot` object.
+
+**Important:** We are not creating a `Robot` object. We are creating a `CompanionRobot` object and storing its reference in a `Robot` variable.
+
+This is possible because `CompanionRobot extends Robot`.
+
+Also, `Robot` is an abstract class, so we cannot directly instantiate it using `new Robot()`.
+
+```java
+Robot robot1 = new CompanionRobot(...); // Valid
+Robot robot2 = new WorkerRobot(...);    // Valid
+Robot robot3 = new Robot();             // Invalid: Robot is abstract
+```
+
+## 2. Understanding Strategy Objects
+
+The constructor receives three strategy objects:
+
+```java
+new NormalWalk()
+new NormalTalk()
+new NoFly()
+```
+
+These objects are passed to the `CompanionRobot` constructor, which calls the parent constructor using `super(w, t, f)`.
+
+The parent constructor stores their references:
+
+```java
+public Robot(WalkableRobot w, TalkableRobot t, FlyableRobot f) {
+    this.walkBehavior = w;
+    this.talkBehavior = t;
+    this.flyBehavior = f;
+}
+```
+
+After the assignments, the references are:
+
+| Instance variable | Actual object       |
+| ----------------- | ------------------- |
+| `walkBehavior`    | `NormalWalk` object |
+| `talkBehavior`    | `NormalTalk` object |
+| `flyBehavior`     | `NoFly` object      |
+
+The variables are declared using interfaces, but they refer to objects of concrete classes that implement those interfaces.
+
+## 3. How Does `robot1.walk()` Execute?
+
+### Step 1: Call the method
+
+```java
+robot1.walk();
+```
+
+Java enters the `walk()` method defined in the `Robot` class.
+
+### Step 2: Delegate to the strategy
+
+```java
+public void walk() {
+    walkBehavior.walk();
+}
+```
+
+The `Robot` class does not implement the walking algorithm itself. It delegates the work to the object referenced by `walkBehavior`.
+
+### Step 3: Identify the actual object
+
+The variable `walkBehavior` refers to a `NormalWalk` object because we passed `new NormalWalk()` to the constructor.
+
+### Step 4: Execute the corresponding implementation
+
+```java
+class NormalWalk implements WalkableRobot {
+    public void walk() {
+        System.out.println("Walking normally...");
+    }
+}
+```
+
+Therefore, the output is:
+
+```text
+Walking normally...
+```
+
+### Complete execution flow
+
+```text
+main()
+  |
+  v
+robot1.walk()
+  |
+  v
+Robot.walk()
+  |
+  v
+walkBehavior.walk()
+  |
+  v
+NormalWalk.walk()
+  |
+  v
+Output: Walking normally...
+```
+
+## 4. Why Does Java Call `NormalWalk.walk()`?
+
+Consider the interface:
+
+```java
+interface WalkableRobot {
+    void walk();
+}
+```
+
+And its implementation:
+
+```java
+class NormalWalk implements WalkableRobot {
+    public void walk() {
+        System.out.println("Walking normally...");
+    }
+}
+```
+
+The interface specifies which method must be provided. The implementing class defines what the method does.
+
+The declaration:
+
+```java
+WalkableRobot walkBehavior = new NormalWalk();
+```
+
+has two different types to understand:
+
+- **Declared type:** `WalkableRobot`
+- **Actual object type:** `NormalWalk`
+
+The declared type determines which methods can be accessed through the reference at compile time. At runtime, Java invokes the overridden instance method implemented by the actual object's class.
+
+This is called **runtime polymorphism** or **dynamic method dispatch**.
+
+## 5. What If We Change the Strategy?
+
+Suppose we change the object passed to the constructor:
+
+```java
+Robot robot1 = new CompanionRobot(
+    new NoWalk(),
+    new NormalTalk(),
+    new NoFly()
+);
+```
+
+Now, `walkBehavior` refers to a `NoWalk` object instead of a `NormalWalk` object.
+
+When we execute:
+
+```java
+robot1.walk();
+```
+
+Java follows the same delegation process, but invokes `NoWalk.walk()`.
+
+Output:
+
+```text
+Cannot walk.
+```
+
+We changed the walking behavior without modifying the `Robot.walk()` method.
+
+That is the key benefit of the Strategy Design Pattern.
+
+## 6. How Does `projection()` Work Differently?
+
+The `projection()` method is abstract in `Robot`:
+
+```java
+public abstract void projection();
+```
+
+Its subclasses provide their own implementations:
+
+```java
+class CompanionRobot extends Robot {
+    public void projection() {
+        System.out.println("Displaying friendly companion features...");
+    }
+}
+```
+
+```java
+class WorkerRobot extends Robot {
+    public void projection() {
+        System.out.println("Displaying worker efficiency stats...");
+    }
+}
+```
+
+When we execute:
+
+```java
+Robot robot1 = new CompanionRobot(...);
+Robot robot2 = new WorkerRobot(...);
+
+robot1.projection();
+robot2.projection();
+```
+
+Output:
+
+```text
+Displaying friendly companion features...
+Displaying worker efficiency stats...
+```
+
+Here, runtime polymorphism selects the implementation based on the actual robot object. Unlike walking, talking, and flying, `projection()` is implemented by the robot subclasses themselves rather than delegated to separate strategy objects.
+
+## 7. Parent Reference vs. Child Reference
+
+Both declarations are valid:
+
+```java
+CompanionRobot robot1 = new CompanionRobot(...);
+```
+
+```java
+Robot robot1 = new CompanionRobot(...);
+```
+
+The second declaration provides more flexibility because a `Robot` reference can refer to either a `CompanionRobot` or a `WorkerRobot`.
+
+```java
+Robot robot = new CompanionRobot(...);
+robot = new WorkerRobot(...); // Valid
+```
+
+However, a `CompanionRobot` reference cannot refer directly to a `WorkerRobot` object because they are sibling subclasses.
+
+```java
+CompanionRobot robot = new CompanionRobot(...);
+robot = new WorkerRobot(...); // Compilation error
+```
+
+Using a parent reference for a child object is called **upcasting**.
+
+## 8. Key Concepts to Remember
+
+1. `new` creates an object of the specified concrete class.
+2. The reference variable stores a reference to that object.
+3. A parent-class reference can refer to an object of its child class.
+4. An interface reference can refer to an object of a class implementing that interface.
+5. The `Robot` class delegates walking, talking, and flying to separate behavior objects.
+6. Java invokes the appropriate overridden instance method based on the actual object's class.
+7. The Strategy Design Pattern allows behaviors to be changed independently of the class that uses them.
+8. `projection()` demonstrates runtime polymorphism through inheritance, while the other behaviors demonstrate runtime polymorphism through composition and delegation.
+
+### One-line summary
+
+**The reference's declared type determines what methods are accessible at compile time, while the actual object's class determines which overridden instance method executes at runtime.**

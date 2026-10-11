@@ -1,0 +1,353 @@
+Design patterns are reusable blueprints and standard solutions to common,
+recurring problems in software design.
+
+
+Problems with Inheritance -
+1. Code reuse
+2. To add new feature a lot of changes were requested.
+3. Breaking Open Close Principle of solid principes.
+
+
+The solution to this is Strategy Design Pattern
+
+Strategy Design Pattern defines a family of algorithm,
+put them into separate classes so taht
+they can be changed at run time.
+
+
+Inshort strategy design pattern, says-
+Follow composition over inheritance
+
+
+
+
+# Strategy Design Pattern — Java Notes
+
+## 1. What Is the Strategy Design Pattern?
+
+The **Strategy Design Pattern** is a behavioral design pattern that allows us to define multiple algorithms or behaviors, encapsulate each one in a separate class, and make them interchangeable.
+
+Instead of writing all behaviors inside one class, we separate them into individual classes and delegate execution to the selected behavior.
+
+### Key Idea
+
+- Define a common interface for a behavior.
+- Create separate classes implementing that interface.
+- Pass the required strategy object to the main class.
+- The main class delegates the task to the selected strategy.
+
+**Real-life example:** An e-commerce application supports UPI, card, and cash-on-delivery payments.
+
+All three perform the same general task — making a payment — but implement it differently.
+
+---
+
+## 2. Real-Life Example: Payment System
+
+Imagine an e-commerce application where a customer can select different payment methods.
+
+- UPI Payment
+- Card Payment
+- Cash on Delivery
+
+The application should support all these methods without requiring major changes to its shopping cart class.
+
+### Step 1: Create the Strategy Interface
+
+```java
+interface PaymentStrategy {
+    void pay(double amount);
+}
+```
+
+**Explanation:**
+
+- `PaymentStrategy` defines a common payment operation.
+- Every payment method must implement `pay()`.
+- The interface specifies what the payment strategy must do, not how it does it.
+
+### Step 2: Implement Concrete Strategies
+
+```java
+class UpiPayment implements PaymentStrategy {
+    @Override
+    public void pay(double amount) {
+        System.out.println(
+            "Paid ₹" + amount + " using UPI"
+        );
+    }
+}
+
+class CardPayment implements PaymentStrategy {
+    @Override
+    public void pay(double amount) {
+        System.out.println(
+            "Paid ₹" + amount + " using Card"
+        );
+    }
+}
+
+class CashPayment implements PaymentStrategy {
+    @Override
+    public void pay(double amount) {
+        System.out.println(
+            "Pay ₹" + amount + " using Cash on Delivery"
+        );
+    }
+}
+```
+
+**Explanation:**
+
+Each class implements the same interface but provides its own implementation of `pay()`.
+
+This is an example of runtime polymorphism.
+
+### Step 3: Create the Context Class
+
+```java
+class ShoppingCart {
+    private PaymentStrategy paymentStrategy;
+
+    public ShoppingCart(PaymentStrategy paymentStrategy) {
+        this.paymentStrategy = paymentStrategy;
+    }
+
+    public void checkout(double amount) {
+        paymentStrategy.pay(amount);
+    }
+}
+```
+
+**Explanation:**
+
+- `ShoppingCart` is the **context class**.
+- `paymentStrategy` stores a reference to the selected payment strategy.
+- The constructor receives a strategy object.
+- `checkout()` delegates payment to that object.
+- `ShoppingCart` does not need to know the internal implementation of each payment method.
+
+### Step 4: Execute Different Strategies
+
+```java
+public class Main {
+    public static void main(String[] args) {
+
+        ShoppingCart cart1 =
+            new ShoppingCart(new UpiPayment());
+
+        cart1.checkout(1000);
+
+        ShoppingCart cart2 =
+            new ShoppingCart(new CardPayment());
+
+        cart2.checkout(2000);
+
+        ShoppingCart cart3 =
+            new ShoppingCart(new CashPayment());
+
+        cart3.checkout(500);
+    }
+}
+```
+
+**Output:**
+
+```text
+Paid ₹1000.0 using UPI
+Paid ₹2000.0 using Card
+Pay ₹500.0 using Cash on Delivery
+```
+
+### How Does It Work?
+
+```text
+                 ShoppingCart
+                      |
+                checkout(1000)
+                      |
+                      v
+              PaymentStrategy
+                      |
+           -----------------------
+           |          |          |
+           v          v          v
+       UpiPayment  CardPayment  CashPayment
+```
+
+The context delegates payment to whichever strategy object it receives.
+
+### What If We Add a New Payment Method?
+
+Suppose we want to add wallet payments.
+
+```java
+class WalletPayment implements PaymentStrategy {
+    @Override
+    public void pay(double amount) {
+        System.out.println(
+            "Paid ₹" + amount + " using Wallet"
+        );
+    }
+}
+```
+
+We can now use it without modifying `ShoppingCart`:
+
+```java
+ShoppingCart cart =
+    new ShoppingCart(new WalletPayment());
+
+cart.checkout(1500);
+```
+
+**Output:**
+
+```text
+Paid ₹1500.0 using Wallet
+```
+
+This demonstrates one of the key benefits of the Strategy Pattern: we can introduce new behaviors without changing the context class.
+
+*Note: This is a simplified design-pattern demonstration, not a production-ready payment integration.*
+
+---
+
+## 3. Other Real-Life Examples
+
+### A. Navigation Applications
+
+**Common task:** Calculate a route.
+
+Possible strategies:
+
+- `DrivingStrategy`
+- `WalkingStrategy`
+- `CyclingStrategy`
+
+Each strategy calculates a route using a different travel mode.
+
+```java
+interface RouteStrategy {
+    void calculateRoute();
+}
+
+class DrivingStrategy implements RouteStrategy {
+    public void calculateRoute() {
+        System.out.println("Calculating driving route");
+    }
+}
+
+class WalkingStrategy implements RouteStrategy {
+    public void calculateRoute() {
+        System.out.println("Calculating walking route");
+    }
+}
+```
+
+The navigation application can select the appropriate strategy based on the user's travel mode.
+
+### B. E-commerce Product Sorting
+
+**Common task:** Sort products.
+
+Possible strategies:
+
+- `PriceLowToHighStrategy`
+- `PriceHighToLowStrategy`
+- `RatingStrategy`
+
+Each strategy sorts products according to a different criterion.
+
+### C. Video Games
+
+**Common task:** Perform an attack.
+
+Possible strategies:
+
+- `SwordAttackStrategy`
+- `BowAttackStrategy`
+- `MagicAttackStrategy`
+
+A character can switch its attack behavior without changing the main character class.
+
+### D. Spam Detection
+
+**Common task:** Classify incoming emails.
+
+Possible strategies:
+
+- `RuleBasedFilter`
+- `MachineLearningFilter`
+
+The application can use different classification algorithms behind a common interface.
+
+### E. File Compression
+
+**Common task:** Compress files.
+
+Possible strategies:
+
+- `ZipCompressionStrategy`
+- `GzipCompressionStrategy`
+
+The application delegates compression to the selected algorithm.
+
+---
+
+## 4. Strategy Pattern vs. Runtime Polymorphism
+
+These concepts are related, but they are not identical.
+
+| Concept | Meaning |
+|---|---|
+| Interface | Defines the common operations a strategy must provide. |
+| Concrete strategy | Implements a particular behavior or algorithm. |
+| Context class | Uses a strategy by delegating work to it. |
+| Runtime polymorphism | Allows Java to invoke the overridden implementation belonging to the actual object. |
+| Strategy Pattern | Organizes interchangeable behaviors into separate classes and lets a context use them. |
+
+Runtime polymorphism is a language feature that helps implement the Strategy Pattern.
+
+---
+
+## 5. Connection to the Robot Example
+
+In the Robot example:
+
+| Payment system | Robot example |
+|---|---|
+| `PaymentStrategy` | `WalkableRobot` |
+| `UpiPayment` | `NormalWalk` |
+| `CardPayment` | `NoWalk` |
+| `ShoppingCart` | `Robot` |
+| `checkout()` | `walk()` |
+
+The same design principle applies: define an interface, implement multiple behaviors, and delegate execution to the selected object.
+
+**Important distinction:** In the Robot example, `walk()`, `talk()`, and `fly()` use separate strategy objects. The `projection()` method instead demonstrates inheritance and runtime polymorphism because each robot subclass provides its own implementation.
+
+---
+
+## 6. How to Identify When to Use the Strategy Pattern
+
+Ask yourself:
+
+1. Is there a common task?
+2. Are there multiple ways to perform that task?
+3. Can each way be encapsulated in a separate class behind a common interface?
+4. Would selecting a behavior at runtime make the code easier to extend or maintain?
+
+If the answer is yes, the Strategy Pattern may be appropriate.
+
+### Benefits
+
+- Reduces large conditional statements for selecting behaviors.
+- Follows the Open/Closed Principle: new strategies can be added without modifying the context class.
+- Encourages composition over inheritance.
+- Makes individual behaviors easier to test and maintain.
+- Allows behaviors to be selected or replaced independently.
+
+### One-Line Summary
+
+**The Strategy Design Pattern encapsulates interchangeable behaviors in separate classes and allows a context to delegate work to the selected strategy.**

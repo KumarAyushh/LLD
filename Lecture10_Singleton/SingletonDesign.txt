@@ -1,0 +1,9 @@
+1. Create a private constructor so that no one can access it from outside.
+2. Create a static isntance (getInstance) that returns the same instance everytime.
+
+
+
+##Real World Usage
+1. Logging System
+2. Database Connetion
+3. Configuration Manager
